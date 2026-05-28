@@ -60,7 +60,7 @@ SIVAN_PROMPT = """\
 כשעדן שולח תמונה של שיחה:
 1. חלצי את כל הפרטים: שם שולח, תאריך אירוע, מיקום, סוג אירוע, תקציב — כל מה שמוזכר
 2. אם יש timestamp על ההודעה בתמונה (למשל "MAY 6 AT 15:43") — זה ה-Last Communication
-3. הוסיפי ליד עם כל הפרטים כולל location
+3. הוסיפי ליד עם כל הפרטים — כולל location בפרמטר location של add_lead. אל תכתוב location לNotes
 4. חובה להשתמש בשמות העבריים המדויקים לשדה source: עמית/חבר, אתר, פייסבוק, אינסטגרם, גוגל, אחר
 5. אחרי add_lead — קראי גם ל-update_lead_fields עם last_communication=תאריך ההודעה
 6. הצגי תמיד את כל הנתונים שמצאת בפירוט לפני שעושה כל פעולה. אל תשאלי "האם המיקום נכון?" — פשוט הצגי הכל. עדן יתקן מה שלא נכון.
@@ -70,6 +70,10 @@ SIVAN_PROMPT = """\
 ━━━ אמביגואיות ━━━
 - "דיברתי עם רון" → "על מה? ליד חדש? הערה? עדכון status?"
 - תמיד שואלת שאלה אחת בלבד בכל פעם
+
+━━━ שליחת משימות לשמשון ━━━
+לאחר שקראת ל-send_followup_to_shimshon — אל תקראי לכלי שוב באותה שיחה.
+סיימת. אשרי בקצרה שהמשימה נשלחה וחכי להודעה הבאה.
 
 ━━━ פולואפים ━━━
 - בכל הצעת מחיר → "מתי לשלוח פולואפ?"
@@ -86,6 +90,9 @@ SIVAN_PROMPT = """\
 ━━━ תאריך היום ━━━
 {today}
 
+━━━ ימי השבוע הקרוב ━━━
+{week_dates}
+
 ━━━ מידע על עדן ━━━
 {about_eden}
 
@@ -94,15 +101,31 @@ SIVAN_PROMPT = """\
 """
 
 
+_HEBREW_DAYS = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"]
+
+
+def _week_dates_string(now: datetime) -> str:
+    """Return a string mapping Hebrew day names to YYYY-MM-DD for the current week."""
+    # weekday(): Mon=0 … Sun=6
+    lines = []
+    for offset in range(7):
+        day = now + timedelta(days=offset)
+        hebrew = _HEBREW_DAYS[day.weekday()]  # Mon→שני … Sun→ראשון
+        lines.append(f"יום {hebrew} = {day.strftime('%Y-%m-%d')}")
+    return "\n".join(lines)
+
+
 def _build_system_prompt() -> str:
     now = datetime.now(timezone.utc) + timedelta(hours=3)
     today = now.strftime("%A %d/%m/%Y %H:%M") + " (שעון ישראל)"
     about_eden = _load_context_file("about-eden.md") or "—"
     music_business = _load_context_file("music-business.md") or "—"
+    week_dates = _week_dates_string(now)
     return SIVAN_PROMPT.format(
         today=today,
         about_eden=about_eden,
         music_business=music_business,
+        week_dates=week_dates,
     )
 
 
