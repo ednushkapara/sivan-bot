@@ -135,6 +135,56 @@ def execute_tool(name: str, params: dict) -> dict:
                 leads = get_due_followups(days_ahead=params.get("days_ahead", 3))
                 return {"leads": leads, "count": len(leads)}
 
+            case "send_followup_to_shimshon":
+                from shimshon_bridge import send_task_to_shimshon
+                from notion_leads import _today_iso
+                lead_name = params["lead_name"]
+                lead = get_lead_by_name(lead_name)
+                if not lead:
+                    suggestions = get_task_suggestions(lead_name)
+                    return _not_found_response(lead_name, suggestions)
+                task_id = send_task_to_shimshon(
+                    description=params["task_description"],
+                    scheduled_date=params.get("scheduled_date"),
+                    due_date=params.get("due_date"),
+                )
+                if params.get("scheduled_date"):
+                    update_lead_fields(
+                        lead["id"],
+                        follow_up_date=params["scheduled_date"],
+                        last_communication=_today_iso(),
+                    )
+                return {
+                    "success": True,
+                    "task_id": task_id,
+                    "message": f"משימה נשלחה לשמשון עבור {lead['name']}",
+                }
+
+            case "close_lead_won":
+                from shimshon_bridge import send_task_to_shimshon
+                from notion_leads import _today_iso
+                lead_name = params["lead_name"]
+                lead = get_lead_by_name(lead_name)
+                if not lead:
+                    suggestions = get_task_suggestions(lead_name)
+                    return _not_found_response(lead_name, suggestions)
+                update_lead_status(lead["id"], "סגור — זכינו ✅")
+                update_lead_fields(
+                    lead["id"],
+                    final_price=params.get("final_price"),
+                    location=params.get("location"),
+                    last_communication=_today_iso(),
+                )
+                event_date = params["event_date"]
+                event_time = params["event_time"]
+                location = params.get("location", "")
+                task_desc = f"תוסיף ליומן: {lead['name']} | {event_date} {event_time} | {location}".strip(" |")
+                send_task_to_shimshon(task_desc, scheduled_date=_today_iso())
+                return {
+                    "success": True,
+                    "message": f"עסקה נסגרה ✅ | {lead['name']} | {event_date} {event_time}",
+                }
+
             case "draft_customer_message":
                 from notion_leads import get_lead_context_for_message
                 context = get_lead_context_for_message(params["lead_name"])

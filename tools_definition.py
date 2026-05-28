@@ -264,6 +264,71 @@ TOOL_DEFINITIONS = [
     },
 
     {
+        "name": "send_followup_to_shimshon",
+        "description": (
+            "שלחי משימת פולואפ לשמשון. "
+            "השתמשי כשעדן מבקש לזכור לחזור ללקוח או לשלוח הודעה בתאריך מסוים. "
+            "המשימה תופיע אצל שמשון תחת Project='סיוון'."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lead_name": {
+                    "type": "string",
+                    "description": "שם הלקוח"
+                },
+                "task_description": {
+                    "type": "string",
+                    "description": "תיאור המשימה לשמשון — מה לעשות"
+                },
+                "scheduled_date": {
+                    "type": "string",
+                    "description": "מתי לבצע (YYYY-MM-DD)"
+                },
+                "due_date": {
+                    "type": "string",
+                    "description": "דד-ליין (YYYY-MM-DD) — רק אם עדן ציין דד-ליין"
+                }
+            },
+            "required": ["lead_name", "task_description"]
+        }
+    },
+
+    {
+        "name": "close_lead_won",
+        "description": (
+            "סגרי עסקה — עדכני סטטוס ל'סגור — זכינו' ושלחי משימה לשמשון להוסיף ליומן. "
+            "השתמשי כשעדן אומר 'סגרנו', 'אושר', 'חתמנו'."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lead_name": {
+                    "type": "string",
+                    "description": "שם הלקוח"
+                },
+                "event_date": {
+                    "type": "string",
+                    "description": "תאריך האירוע (YYYY-MM-DD)"
+                },
+                "event_time": {
+                    "type": "string",
+                    "description": "שעת האירוע (HH:MM)"
+                },
+                "final_price": {
+                    "type": "number",
+                    "description": "מחיר סופי מוסכם בשקלים"
+                },
+                "location": {
+                    "type": "string",
+                    "description": "מיקום האירוע"
+                }
+            },
+            "required": ["lead_name", "event_date", "event_time"]
+        }
+    },
+
+    {
         "name": "draft_customer_message",
         "description": (
             "נסחי הודעה ללקוח — פולואפ, הצעת מחיר, אישור, או הודעה כללית. "
