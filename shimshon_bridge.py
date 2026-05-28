@@ -28,6 +28,7 @@ def send_task_to_shimshon(
     description: str,
     scheduled_date: str = None,
     due_date: str = None,
+    notes: str = None,
 ) -> str:
     """
     Write a new task to Shimshon's Tasks DB with Project="סיוון".
@@ -46,6 +47,8 @@ def send_task_to_shimshon(
         properties["Scheduled Date"] = {"date": {"start": scheduled_date}}
     if due_date:
         properties["Due Date"] = {"date": {"start": due_date}}
+    if notes:
+        properties["Notes"] = {"rich_text": [{"text": {"content": notes[:2000]}}]}
 
     response = notion.pages.create(
         parent={"database_id": SHIMSHON_TASKS_DB_ID},

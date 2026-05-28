@@ -279,7 +279,11 @@ TOOL_DEFINITIONS = [
                 },
                 "task_description": {
                     "type": "string",
-                    "description": "תיאור המשימה לשמשון — מה לעשות"
+                    "description": "שם קצר של המשימה — לדוגמה: 'פולואפ ליוסי לוי' (לא לכלול כאן תוכן הודעה)"
+                },
+                "task_notes": {
+                    "type": "string",
+                    "description": "תוכן מפורט — הודעה לשלוח, פרטים נוספים. יכנס לשדה Notes של המשימה."
                 },
                 "scheduled_date": {
                     "type": "string",

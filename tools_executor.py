@@ -147,6 +147,7 @@ def execute_tool(name: str, params: dict) -> dict:
                     description=params["task_description"],
                     scheduled_date=params.get("scheduled_date"),
                     due_date=params.get("due_date"),
+                    notes=params.get("task_notes"),
                 )
                 if params.get("scheduled_date"):
                     update_lead_fields(
