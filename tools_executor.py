@@ -135,6 +135,19 @@ def execute_tool(name: str, params: dict) -> dict:
                 leads = get_due_followups(days_ahead=params.get("days_ahead", 3))
                 return {"leads": leads, "count": len(leads)}
 
+            case "draft_customer_message":
+                from notion_leads import get_lead_context_for_message
+                context = get_lead_context_for_message(params["lead_name"])
+                if not context.get("found"):
+                    from notion_leads import get_task_suggestions
+                    suggestions = get_task_suggestions(params["lead_name"])
+                    return _not_found_response(params["lead_name"], suggestions)
+                return {
+                    "lead_context": context,
+                    "message_type": params["message_type"],
+                    "extra_context": params.get("context", ""),
+                }
+
             case _:
                 logger.warning("execute_tool: unknown tool '%s'", name)
                 return {"error": f"כלי לא מוכר: '{name}'"}

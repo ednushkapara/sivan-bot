@@ -349,6 +349,25 @@ def get_pipeline_summary() -> dict:
     return summary
 
 
+def get_lead_context_for_message(lead_name: str) -> dict:
+    """Return lead context for draft_customer_message. Claude does the actual drafting."""
+    lead = get_lead_by_name(lead_name)
+    if not lead:
+        return {"found": False, "lead_name": lead_name}
+    return {
+        "found": True,
+        "name": lead["name"],
+        "event_type": lead["event_type"],
+        "event_date": lead["event_date"],
+        "status": lead["status"],
+        "proposed_price": lead["proposed_price"],
+        "location": lead["location"],
+        "last_communication": lead["last_communication"],
+        "follow_up_date": lead["follow_up_date"],
+        "notes": lead["notes"],
+    }
+
+
 def get_due_followups(days_ahead: int = 3) -> list:
     """Return open leads whose Follow Up Date is within the next N days (incl. overdue)."""
     notion = _get_client()

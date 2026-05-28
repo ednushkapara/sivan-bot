@@ -263,4 +263,31 @@ TOOL_DEFINITIONS = [
         }
     },
 
+    {
+        "name": "draft_customer_message",
+        "description": (
+            "נסחי הודעה ללקוח — פולואפ, הצעת מחיר, אישור, או הודעה כללית. "
+            "הכלי מביא את פרטי הליד, ואת ניסוח ההודעה עושה Claude. "
+            "השתמשי כשעדן מבקש 'תנסחי הודעה ל...' או 'תנסחי פולואפ ל...'."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lead_name": {
+                    "type": "string",
+                    "description": "שם הלקוח"
+                },
+                "message_type": {
+                    "type": "string",
+                    "description": "סוג ההודעה: פולואפ | הצעת מחיר | אישור | כללי"
+                },
+                "context": {
+                    "type": "string",
+                    "description": "הנחיה ספציפית מעדן — קצרה יותר, רשמית יותר, וכו'"
+                }
+            },
+            "required": ["lead_name", "message_type"]
+        }
+    },
+
 ]
