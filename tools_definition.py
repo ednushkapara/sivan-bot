@@ -268,6 +268,32 @@ TOOL_DEFINITIONS = [
     },
 
     {
+        "name": "update_followup",
+        "description": (
+            "בטלי או עדכני תאריך פולואפ קיים בשמשון ובליד. "
+            "השתמשי כשעדן אומר 'הלקוח ענה', 'בטלי פולואפ', 'דחי פולואפ ל-X'."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lead_name": {
+                    "type": "string",
+                    "description": "שם הלקוח"
+                },
+                "action": {
+                    "type": "string",
+                    "description": "'cancel' לביטול | 'update_date' לדחייה"
+                },
+                "new_date": {
+                    "type": "string",
+                    "description": "תאריך חדש YYYY-MM-DD — רק אם action='update_date'"
+                }
+            },
+            "required": ["lead_name", "action"]
+        }
+    },
+
+    {
         "name": "send_followup_to_shimshon",
         "description": (
             "שלחי משימת פולואפ לשמשון. "

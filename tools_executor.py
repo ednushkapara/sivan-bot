@@ -136,6 +136,37 @@ def execute_tool(name: str, params: dict) -> dict:
                 leads = get_due_followups(days_ahead=params.get("days_ahead", 3))
                 return {"leads": leads, "count": len(leads)}
 
+            case "update_followup":
+                from shimshon_bridge import find_shimshon_task, cancel_shimshon_task, update_shimshon_task_date
+                from notion_leads import clear_follow_up_date
+                lead_name = params["lead_name"]
+                lead = get_lead_by_name(lead_name)
+                if not lead:
+                    suggestions = get_task_suggestions(lead_name)
+                    return _not_found_response(lead_name, suggestions)
+                task_id = find_shimshon_task(lead_name)
+                action = params["action"]
+                if action == "cancel":
+                    if task_id:
+                        cancel_shimshon_task(task_id)
+                    clear_follow_up_date(lead["id"])
+                    return {
+                        "success": True,
+                        "message": f"פולואפ ל-{lead['name']} בוטל. Follow Up Date נמחק.",
+                    }
+                elif action == "update_date":
+                    new_date = params.get("new_date")
+                    if not new_date:
+                        return {"error": "new_date נדרש עבור action='update_date'"}
+                    if task_id:
+                        update_shimshon_task_date(task_id, new_date)
+                    update_lead_fields(lead["id"], follow_up_date=new_date)
+                    return {
+                        "success": True,
+                        "message": f"פולואפ ל-{lead['name']} עודכן ל-{new_date}.",
+                    }
+                return {"error": f"action לא מוכר: {action}"}
+
             case "send_followup_to_shimshon":
                 from shimshon_bridge import send_task_to_shimshon
                 from notion_leads import _today_iso

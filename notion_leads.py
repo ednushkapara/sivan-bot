@@ -352,6 +352,17 @@ def get_pipeline_summary() -> dict:
     return summary
 
 
+def clear_follow_up_date(lead_id: str) -> bool:
+    """Remove Follow Up Date from a lead."""
+    notion = _get_client()
+    notion.pages.update(
+        page_id=lead_id,
+        properties={"Follow Up Date": {"date": None}},
+    )
+    logger.info("clear_follow_up_date: %s", lead_id[:8])
+    return True
+
+
 def get_lead_context_for_message(lead_name: str) -> dict:
     """Return lead context for draft_customer_message. Claude does the actual drafting."""
     lead = get_lead_by_name(lead_name)
