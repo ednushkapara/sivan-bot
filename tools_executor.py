@@ -50,6 +50,7 @@ def execute_tool(name: str, params: dict) -> dict:
                     budget=params.get("budget"),
                     contact_name=params.get("contact_name"),
                     contact_phone=params.get("contact_phone"),
+                    location=params.get("location"),
                     source=params.get("source"),
                     notes=params.get("notes"),
                 )

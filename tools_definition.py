@@ -52,6 +52,10 @@ TOOL_DEFINITIONS = [
                     "type": "string",
                     "description": "מספר טלפון"
                 },
+                "location": {
+                    "type": "string",
+                    "description": "מיקום האירוע — עיר, אולם, כתובת"
+                },
                 "source": {
                     "type": "string",
                     "description": "מקור הליד — אחד מ: עמית/חבר, אתר, פייסבוק, אינסטגרם, גוגל, אחר"

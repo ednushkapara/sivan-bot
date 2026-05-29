@@ -125,6 +125,7 @@ def create_lead(
     budget: float = None,
     contact_name: str = None,
     contact_phone: str = None,
+    location: str = None,
     source: str = None,
     notes: str = None,
 ) -> str:
@@ -150,6 +151,8 @@ def create_lead(
         props["Contact Name"] = {"rich_text": _rich_text(contact_name)}
     if contact_phone:
         props["Contact Phone"] = {"phone_number": contact_phone}
+    if location:
+        props["Location"] = {"rich_text": _rich_text(location)}
     if source:
         props["Source"] = {"select": {"name": source}}
     if notes:
