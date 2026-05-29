@@ -136,6 +136,39 @@ def execute_tool(name: str, params: dict) -> dict:
                 leads = get_due_followups(days_ahead=params.get("days_ahead", 3))
                 return {"leads": leads, "count": len(leads)}
 
+            case "log_music_event":
+                from notion_leads import create_music_event
+                page_id = create_music_event(
+                    name=params["name"],
+                    event_date=params["event_date"],
+                    event_type=params["event_type"],
+                    performance_style=params.get("performance_style", []),
+                    music_style=params.get("music_style", []),
+                    location=params.get("location"),
+                    client=params.get("client"),
+                    revenue=params.get("revenue"),
+                    deposit_paid=params.get("deposit_paid"),
+                    contract_signed=params.get("contract_signed"),
+                    final_payment_received=params.get("final_payment_received"),
+                    notes=params.get("notes"),
+                    lead_name=params.get("lead_name"),
+                )
+                return {"success": True, "event_id": page_id, "message": f"אירוע נרשם: {params['name']}"}
+
+            case "update_music_event_payment":
+                from notion_leads import get_music_event_by_name, update_music_event
+                event_name = params["name"]
+                event = get_music_event_by_name(event_name)
+                if not event:
+                    return {"error": f"לא נמצא אירוע בשם '{event_name}'"}
+                update_music_event(
+                    event["id"],
+                    deposit_paid=params.get("deposit_paid"),
+                    contract_signed=params.get("contract_signed"),
+                    final_payment_received=params.get("final_payment_received"),
+                )
+                return {"success": True, "message": f"תשלום עודכן: {event['name']}"}
+
             case "log_conversation_entry":
                 from notion_leads import log_conversation_entry
                 lead_name = params["lead_name"]

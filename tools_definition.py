@@ -268,6 +268,48 @@ TOOL_DEFINITIONS = [
     },
 
     {
+        "name": "log_music_event",
+        "description": (
+            "רשמי אירוע מוזיקה שהתקיים — הכנסה, מקדמה, הסכם, תשלום סופי. "
+            "השתמשי כשעדן מדווח על אירוע שהיה."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "description": "שם האירוע"},
+                "event_date": {"type": "string", "description": "תאריך האירוע (YYYY-MM-DD)"},
+                "event_type": {"type": "string", "description": "חתונה / בר מצווה / בת מצווה / אירוע חברה / מסיבה / אחר"},
+                "performance_style": {"type": "array", "items": {"type": "string"}},
+                "music_style": {"type": "array", "items": {"type": "string"}},
+                "location": {"type": "string"},
+                "client": {"type": "string", "description": "שם הלקוח"},
+                "revenue": {"type": "number", "description": "הכנסה בפועל בשקלים"},
+                "deposit_paid": {"type": "string", "description": "כן / לא / חלקי"},
+                "contract_signed": {"type": "string", "description": "כן / לא"},
+                "final_payment_received": {"type": "string", "description": "כן / לא / חלקי"},
+                "notes": {"type": "string"},
+                "lead_name": {"type": "string", "description": "שם הליד לקישור (אופציונלי)"}
+            },
+            "required": ["name", "event_date", "event_type"]
+        }
+    },
+
+    {
+        "name": "update_music_event_payment",
+        "description": "עדכני פרטי תשלום של אירוע מוזיקה קיים.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "description": "שם האירוע"},
+                "deposit_paid": {"type": "string", "description": "כן / לא / חלקי"},
+                "contract_signed": {"type": "string", "description": "כן / לא"},
+                "final_payment_received": {"type": "string", "description": "כן / לא / חלקי"}
+            },
+            "required": ["name"]
+        }
+    },
+
+    {
         "name": "log_conversation_entry",
         "description": (
             "רשמי שיחה או התכתבות עם לקוח ב-Conversation Log. "

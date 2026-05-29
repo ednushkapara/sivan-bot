@@ -353,6 +353,101 @@ def get_pipeline_summary() -> dict:
     return summary
 
 
+def create_music_event(
+    name: str,
+    event_date: str,
+    event_type: str,
+    performance_style: list = [],
+    music_style: list = [],
+    location: str = None,
+    client: str = None,
+    revenue: float = None,
+    deposit_paid: str = None,
+    contract_signed: str = None,
+    final_payment_received: str = None,
+    notes: str = None,
+    lead_name: str = None,
+) -> str:
+    """Create a Music Event page. Returns page_id."""
+    notion = _get_client()
+    props = {
+        "Name": {"title": [{"text": {"content": name}}]},
+        "Date": {"date": {"start": _parse_date(event_date) or event_date}},
+        "Event Type": {"select": {"name": event_type}},
+    }
+    if performance_style:
+        props["Performance Style"] = {"multi_select": [{"name": s} for s in performance_style]}
+    if music_style:
+        props["Music Style"] = {"multi_select": [{"name": s} for s in music_style]}
+    if location:
+        props["Location"] = {"rich_text": _rich_text(location)}
+    if client:
+        props["Client"] = {"rich_text": _rich_text(client)}
+    if revenue is not None:
+        props["Revenue"] = {"number": float(revenue)}
+    if deposit_paid:
+        props["Deposit Paid"] = {"select": {"name": deposit_paid}}
+    if contract_signed:
+        props["Contract Signed"] = {"select": {"name": contract_signed}}
+    if final_payment_received:
+        props["Final Payment Received"] = {"select": {"name": final_payment_received}}
+    if notes:
+        props["Notes"] = {"rich_text": _rich_text(notes)}
+    if lead_name:
+        lead = get_lead_by_name(lead_name)
+        if lead:
+            props["Lead"] = {"relation": [{"id": lead["id"]}]}
+
+    page = notion.pages.create(
+        parent={"database_id": DB_MUSIC_EVENTS},
+        properties=props,
+    )
+    page_id = page["id"]
+    logger.info("create_music_event: '%s' → %s", name, page_id)
+    return page_id
+
+
+def update_music_event(page_id: str, **kwargs) -> bool:
+    """Update Music Event fields. Only non-None kwargs are sent."""
+    notion = _get_client()
+    props = {}
+    if "deposit_paid" in kwargs and kwargs["deposit_paid"] is not None:
+        props["Deposit Paid"] = {"select": {"name": kwargs["deposit_paid"]}}
+    if "contract_signed" in kwargs and kwargs["contract_signed"] is not None:
+        props["Contract Signed"] = {"select": {"name": kwargs["contract_signed"]}}
+    if "final_payment_received" in kwargs and kwargs["final_payment_received"] is not None:
+        props["Final Payment Received"] = {"select": {"name": kwargs["final_payment_received"]}}
+    if "revenue" in kwargs and kwargs["revenue"] is not None:
+        props["Revenue"] = {"number": float(kwargs["revenue"])}
+    if "notes" in kwargs and kwargs["notes"] is not None:
+        props["Notes"] = {"rich_text": _rich_text(kwargs["notes"])}
+    if not props:
+        return True
+    notion.pages.update(page_id=page_id, properties=props)
+    logger.info("update_music_event: %s", page_id[:8])
+    return True
+
+
+def get_music_event_by_name(name: str) -> dict | None:
+    """Find a Music Event by name (fuzzy). Returns page dict or None."""
+    notion = _get_client()
+    res = notion.databases.query(database_id=DB_MUSIC_EVENTS)
+    needle = name.lower().strip()
+    best = None
+    best_score = 0.0
+    for page in res.get("results", []):
+        title_list = page["properties"].get("Name", {}).get("title", [])
+        page_title = title_list[0].get("plain_text", "") if title_list else ""
+        hay = page_title.lower().strip()
+        if needle == hay or needle in hay or hay in needle:
+            return {"id": page["id"], "name": page_title}
+        score = SequenceMatcher(None, needle, hay).ratio()
+        if score > best_score:
+            best_score = score
+            best = {"id": page["id"], "name": page_title}
+    return best if best_score >= 0.85 else None
+
+
 def log_conversation_entry(
     lead_id: str,
     direction: str,
