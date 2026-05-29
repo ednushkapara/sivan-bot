@@ -22,6 +22,7 @@ def _clean_id(v: str) -> str:
 NOTION_TOKEN = os.getenv("NOTION_TOKEN", "").strip()
 DB_LEADS = _clean_id(os.getenv("NOTION_LEADS_DB", ""))
 DB_MUSIC_EVENTS = _clean_id(os.getenv("NOTION_MUSIC_EVENTS_DB", ""))
+DB_CONVERSATION_LOG = _clean_id(os.getenv("NOTION_CONVERSATION_LOG_DB", ""))
 
 CLOSED_STATUSES = {"סגור — זכינו ✅", "סגור — הפסדנו ❌", "אירוע בוצע 🎵"}
 
@@ -350,6 +351,41 @@ def get_pipeline_summary() -> dict:
     summary["_total_proposed"] = total_proposed
     summary["_total_final"] = total_final
     return summary
+
+
+def log_conversation_entry(
+    lead_id: str,
+    direction: str,
+    platform: str,
+    content: str,
+    message_sent: str = None,
+    current_stage: str = None,
+) -> str:
+    """Log a conversation entry in the Conversation Log DB. Returns entry page_id."""
+    if not DB_CONVERSATION_LOG:
+        raise RuntimeError("NOTION_CONVERSATION_LOG_DB not set in .env")
+    notion = _get_client()
+    props = {
+        "Name": {"title": [{"text": {"content": f"{direction} — {platform}"}}]},
+        "Date": {"date": {"start": _today_iso()}},
+        "Direction": {"select": {"name": direction}},
+        "Platform": {"select": {"name": platform}},
+        "Content": {"rich_text": _rich_text(content)},
+    }
+    if message_sent:
+        props["Message Sent"] = {"rich_text": _rich_text(message_sent)}
+    if current_stage:
+        props["Stage"] = {"select": {"name": current_stage}}
+    if lead_id:
+        props["Lead"] = {"relation": [{"id": lead_id}]}
+
+    page = notion.pages.create(
+        parent={"database_id": DB_CONVERSATION_LOG},
+        properties=props,
+    )
+    entry_id = page["id"]
+    logger.info("log_conversation_entry: %s / %s → %s", direction, platform, entry_id[:8])
+    return entry_id
 
 
 def clear_follow_up_date(lead_id: str) -> bool:

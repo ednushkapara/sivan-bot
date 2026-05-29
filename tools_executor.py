@@ -136,6 +136,27 @@ def execute_tool(name: str, params: dict) -> dict:
                 leads = get_due_followups(days_ahead=params.get("days_ahead", 3))
                 return {"leads": leads, "count": len(leads)}
 
+            case "log_conversation_entry":
+                from notion_leads import log_conversation_entry
+                lead_name = params["lead_name"]
+                lead = get_lead_by_name(lead_name)
+                if not lead:
+                    suggestions = get_task_suggestions(lead_name)
+                    return _not_found_response(lead_name, suggestions)
+                entry_id = log_conversation_entry(
+                    lead_id=lead["id"],
+                    direction=params["direction"],
+                    platform=params["platform"],
+                    content=params["content"],
+                    message_sent=params.get("message_sent"),
+                    current_stage=lead.get("status"),
+                )
+                return {
+                    "success": True,
+                    "entry_id": entry_id,
+                    "message": f"שיחה נרשמה עבור {lead['name']}",
+                }
+
             case "update_followup":
                 from shimshon_bridge import find_shimshon_task, cancel_shimshon_task, update_shimshon_task_date
                 from notion_leads import clear_follow_up_date

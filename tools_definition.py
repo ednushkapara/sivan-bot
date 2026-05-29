@@ -268,6 +268,41 @@ TOOL_DEFINITIONS = [
     },
 
     {
+        "name": "log_conversation_entry",
+        "description": (
+            "רשמי שיחה או התכתבות עם לקוח ב-Conversation Log. "
+            "השתמשי כשעדן מספר על שיחה, שולחת תמונה של שיחה, "
+            "או מדווח שנשלחה הודעה."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lead_name": {
+                    "type": "string",
+                    "description": "שם הלקוח"
+                },
+                "direction": {
+                    "type": "string",
+                    "description": "כיוון: נכנס | יוצא | שיחת טלפון"
+                },
+                "platform": {
+                    "type": "string",
+                    "description": "פלטפורמה: WhatsApp | אינסטגרם | טלפון | אחר"
+                },
+                "content": {
+                    "type": "string",
+                    "description": "תוכן השיחה / מה נאמר"
+                },
+                "message_sent": {
+                    "type": "string",
+                    "description": "נוסח ההודעה שנשלחה (אם רלוונטי)"
+                }
+            },
+            "required": ["lead_name", "direction", "platform", "content"]
+        }
+    },
+
+    {
         "name": "update_followup",
         "description": (
             "בטלי או עדכני תאריך פולואפ קיים בשמשון ובליד. "

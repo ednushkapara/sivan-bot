@@ -162,6 +162,43 @@ MUSIC_EVENTS_DB_PROPERTIES = {
     "Notes": {"rich_text": {}},
 }
 
+LEAD_STATUS_OPTIONS = [
+    {"name": "איסוף פרטים"},
+    {"name": "קביעת שיחת טלפון"},
+    {"name": "הצעת מחיר נשלחה"},
+    {"name": "במשא ומתן"},
+    {"name": "סגור — זכינו ✅"},
+    {"name": "סגור — הפסדנו ❌"},
+    {"name": "אירוע בוצע 🎵"},
+]
+
+CONVERSATION_LOG_DB_PROPERTIES = {
+    "Name": {"title": {}},
+    "Date": {"date": {}},
+    "Direction": {
+        "select": {
+            "options": [
+                {"name": "נכנס"},
+                {"name": "יוצא"},
+                {"name": "שיחת טלפון"},
+            ]
+        }
+    },
+    "Platform": {
+        "select": {
+            "options": [
+                {"name": "WhatsApp"},
+                {"name": "אינסטגרם"},
+                {"name": "טלפון"},
+                {"name": "אחר"},
+            ]
+        }
+    },
+    "Content": {"rich_text": {}},
+    "Message Sent": {"rich_text": {}},
+    "Stage": {"select": {"options": LEAD_STATUS_OPTIONS}},
+}
+
 
 # ─── Build functions ──────────────────────────────────────────────────────────
 
@@ -268,6 +305,42 @@ def add_sivan_to_shimshon_tasks(client, shimshon_tasks_db_id: str) -> bool:
         return False
 
 
+def create_conversation_log_db(client, parent_page_id: str, leads_db_id: str | None) -> str | None:
+    title = "סיוון Conversation Log"
+    existing = _find_existing_db(client, parent_page_id, title)
+    if existing:
+        print(f"⚠️  DB already exists: {title} — skipping")
+        print(f"   ID: {existing}")
+        print(f"   → Add to .env as NOTION_CONVERSATION_LOG_DB")
+        return existing
+
+    props = dict(CONVERSATION_LOG_DB_PROPERTIES)
+    if leads_db_id:
+        props["Lead"] = {
+            "relation": {
+                "database_id": leads_db_id,
+                "single_property": {},
+            }
+        }
+    else:
+        print("  ⚠️  Leads DB ID not available — skipping Lead relation property")
+
+    try:
+        db = client.databases.create(
+            parent={"type": "page_id", "page_id": parent_page_id},
+            title=[{"type": "text", "text": {"content": title}}],
+            properties=props,
+        )
+        db_id = db["id"]
+        print(f"✅ Created: {title}")
+        print(f"   ID: {db_id}")
+        print(f"   → Add to .env as NOTION_CONVERSATION_LOG_DB")
+        return db_id
+    except Exception as e:
+        print(f"❌ Failed to create {title}: {e}")
+        return None
+
+
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> int:
@@ -317,7 +390,13 @@ def main() -> int:
 
     print()
     print("=" * 50)
-    print("Step 3: Add 'סיוון' to Shimshon Tasks DB")
+    print("Step 3: Create סיוון Conversation Log DB")
+    print("=" * 50)
+    conv_log_db_id = create_conversation_log_db(client, parent_page_id, leads_db_id)
+
+    print()
+    print("=" * 50)
+    print("Step 4: Add 'סיוון' to Shimshon Tasks DB")
     print("=" * 50)
     add_sivan_to_shimshon_tasks(client, shimshon_tasks_db_id)
 
@@ -329,11 +408,13 @@ def main() -> int:
         print(f"  Add to .env:  NOTION_LEADS_DB={leads_db_id}")
     if music_events_db_id:
         print(f"  Add to .env:  NOTION_MUSIC_EVENTS_DB={music_events_db_id}")
+    if conv_log_db_id:
+        print(f"  Add to .env:  NOTION_CONVERSATION_LOG_DB={conv_log_db_id}")
     print()
     print("  Then run:     python verify_lead_schema.py")
     print("  Should show:  X OK, 0 errors")
 
-    errors = sum(1 for v in [leads_db_id, music_events_db_id] if v is None)
+    errors = sum(1 for v in [leads_db_id, music_events_db_id, conv_log_db_id] if v is None)
     return 0 if errors == 0 else 1
 
 
